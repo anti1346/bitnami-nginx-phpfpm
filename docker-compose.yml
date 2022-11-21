@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+
+  # db:
+  #   image: bitnami/mariadb:10.9.4
+  #   restart: unless-stopped
+  #   container_name: db
+  #   environment:
+  #     - MARIADB_ROOT_PASSWORD=${DB_PASSWORD}
+  #     - MARIADB_USER=${DB_USERNAME}
+  #     - MARIADB_PASSWORD=${DB_PASSWORD}
+  #     - MARIADB_DATABASE=${DB_DATABASE}
+  #   ports:
+  #     - 3306:3306
+  #   volumes:
+  #     - project-db:/bitnami:delegated
+
+  phpfpm:
+    image: bitnami/php-fpm:8.1.12
+    restart: unless-stopped
+    container_name: phpfpm
+    volumes:
+      - ./html:/opt/bitnami/nginx/html
+      - ./nginx/www-directory.conf:/opt/bitnami/nginx/conf/bitnami/www-directory.conf:ro
+      - ./php-fpm/php.ini:/opt/bitnami/php/etc/conf.d/php.ini:ro
+
+  nginx:
+    image: bitnami/nginx:1.23.2
+    restart: unless-stopped
+    container_name: nginx
+    depends_on:
+      - phpfpm
+    volumes:
+      - ./html:/opt/bitnami/nginx/html
+      #- ./nginx/nginx.conf:/opt/bitnami/nginx/conf/nginx.conf:ro
+      - ./nginx/www-directory.conf:/opt/bitnami/nginx/conf/bitnami/www-directory.conf:ro
+    ports:
+      - 8080:8080
+      - 8443:8443
+
+  # redis:
+  #   image: bitnami/redis:7.0.5
+  #   container_name: redis
+  #   environment:
+  #     - REDIS_PASSWORD=${REDIS_PASSWORD}
+  
+volumes:
+  project-db:
+    driver: local
